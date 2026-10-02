@@ -341,16 +341,21 @@ def structure_fig(res: dict[str, pd.DataFrame], s: dict, path: Path) -> None:
     fig, ax = plt.subplots(figsize=(8, 4.6))
     ax.scatter(st["nodes"], st["mean_degree"], s=26, color=TEAL, alpha=0.8, linewidths=0)
     ax.set_xscale("log")
-    for name in ["Caltech36", "Texas84", "Penn94", "MIT8"]:
+    # MIT8 sits in the dense mid-size cloud: move its label to empty space with a leader line.
+    offsets = {"Caltech36": (6, 4), "Texas84": (6, 4), "Penn94": (6, 4), "MIT8": (-24, -44)}
+    for name, offset in offsets.items():
         row = st[st["school"] == name]
         if len(row):
+            leader = offset[1] < 0
             ax.annotate(
                 name,
                 (row["nodes"].iloc[0], row["mean_degree"].iloc[0]),
-                xytext=(6, 4),
+                xytext=offset,
                 textcoords="offset points",
+                ha="right" if leader else "left",
                 fontsize=9,
                 color=INK,
+                arrowprops={"arrowstyle": "-", "color": SLATE, "lw": 0.8} if leader else None,
             )
     ax.set_xlabel("Campus size (nodes, log scale)")
     ax.set_ylabel("Mean number of friends")
