@@ -152,9 +152,14 @@ def run(data_dir: str | Path, out_dir: str | Path, jobs: int = 3, limit: int | N
     for name, frame in frames.items():
         sort_cols = [c for c in ("nodes", "school", "attribute", "method", "seed") if c in frame]
         frame.sort_values(sort_cols).to_csv(out_dir / f"{name}.csv", index=False)
-    summary = summarize_results(frames)
-    (out_dir / "summary.json").write_text(json.dumps(summary, indent=2) + "\n")
-    print(f"Wrote {len(frames)} tables and summary.json to {out_dir}")
+    print(f"Wrote {len(frames)} tables to {out_dir}")
+    return write_summary(out_dir)
+
+
+def write_summary(out_dir: str | Path) -> dict:
+    """(Re)compute summary.json from the result tables, without rerunning any analysis."""
+    summary = summarize_results(load_results(out_dir))
+    (Path(out_dir) / "summary.json").write_text(json.dumps(summary, indent=2) + "\n")
     return summary
 
 
@@ -242,6 +247,16 @@ def summarize_results(frames: dict[str, pd.DataFrame]) -> dict:
             },
             "median_ari": {a: _r(g.median()) for a, g in comm.groupby("attribute")["ari"]},
             "caltech_ari": {a: _r(v) for a, v in caltech.items()},
+            "not_year_led": {
+                row.school: row.attribute
+                for row in best_comm.itertuples()
+                if row.attribute != "year"
+            },
+        },
+        "assortativity_not_year_led": {
+            row.school: row.attribute
+            for row in real.loc[real.groupby("school")["r"].idxmax()].itertuples()
+            if row.attribute != "year"
         },
         "missing_code": MISSING,
     }
