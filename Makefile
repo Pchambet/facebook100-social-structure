@@ -10,7 +10,7 @@ setup:  ## install the locked environment
 data:  ## download Facebook100 (207 MB, idempotent)
 	uv run fb100 data
 
-run:  ## every analysis on the 100 campuses -> results/ (about 20 min with 3 workers)
+run:  ## every analysis on the 100 campuses -> results/ (45 min wall-clock with 3 workers on a loaded laptop)
 	uv run fb100 run
 
 figures:  ## static README figures -> docs/figures/

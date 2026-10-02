@@ -17,15 +17,17 @@ correction of this project's first version.
 - **Class year is the main organiser of campus friendship**: it is the most assortative
   attribute on 91 of 100 campuses (median r = 0.436), ahead of status (0.317) and dorm
   (0.221). Major (0.050), gender (0.055) and high school (0.030) barely matter.
-- **Erratum.** The first version of this project read the attribute columns one slot off.
-  Its "year" was the dorm and its "dorm" was the second major, so it reported a dorm
-  effect of 0.019 and concluded that dorms do not matter. The same run, with the documented
-  column order, gives 0.227 (means over 100 campuses).
+- **Erratum.** The first version of this project read the attribute columns one slot off
+  (its "year" was the dorm, its "dorm" the second major) and counted missing values as a
+  category. It reported a dorm effect of 0.019 and concluded that dorms do not matter. With
+  the documented column order the dorm effect is 0.175, and with missing values excluded
+  it is 0.227 (means over 100 campuses).
 - **Link prediction looks solved and is not.** Common-neighbour scores reach a sampled AUC
   of 0.935-0.946, but when every unlinked pair is ranked, only 23% of the top-ranked pairs
   are hidden friendships (resource allocation, R-precision; base rate 0.4%). The first
   version's 96% precision@100 for Adamic-Adar came from ranking hidden edges against ten
-  random non-edges each; on the full ranking it is 61%.
+  times as many random non-edges (12 smallest campuses); on the full ranking it is 61%
+  (10 smallest campuses).
 - **The graph alone recovers a hidden class year 83% of the time** (median over 100
   campuses; always guessing the most frequent year: 21%) and a hidden dorm 56% of the time
   (10%). For gender it adds 7 points over the majority guess.
@@ -39,7 +41,8 @@ Recommendation ("people you may know"), attribute inference and targeting all le
 homophily. Knowing *which* attribute structures a network decides what a model can infer,
 and how much: here class year is nearly free to infer, gender is not. The link-prediction
 results carry a broader lesson: a benchmark against random negatives can report AUC 0.95
-for a ranking whose top candidates are wrong four times out of five.
+for a ranking in which about four of five pairs in the top-R list (R = the number of hidden
+friendships) are wrong.
 
 ## Approach
 
@@ -73,9 +76,11 @@ Sparse linear algebra throughout (chunked triangle counts, vectorised scores), s
 
 ![Erratum](docs/figures/erratum.png)
 
-Reading the documented column order changes the conclusion: dorms matter, and class year
-matters about twice as much as dorms. The first version's numbers are reproduced exactly
-by `make run` (`* (legacy label)` rows in `results/assortativity.csv`).
+Reading the documented column order and excluding missing values changes the conclusion:
+dorms matter, and class year matters about twice as much as dorms. The column shift is the
+larger error; counting missing values as a category cost another 0.05-0.08 in r. `make run`
+reproduces the first version exactly and fixes one error at a time (`* (legacy label)` and
+`* (missing counted)` rows in `results/assortativity.csv`).
 
 ![Link prediction](docs/figures/link_prediction.png)
 
@@ -97,8 +102,8 @@ gender barely (+7 points over the majority guess), in line with their weak assor
 
 ![Communities](docs/figures/communities.png)
 
-Campuses with residential colleges or houses (Rice, Caltech) are organised by residence;
-everywhere else, by cohort.
+On 4 of the 50 campuses analysed (Rice, Caltech, UCSC, Smith, all with residential
+colleges or houses) communities follow residence; on the other 46, class year.
 
 ![Structure](docs/figures/structure.png)
 

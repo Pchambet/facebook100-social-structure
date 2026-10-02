@@ -19,7 +19,11 @@ def test_assortativity_numbers():
     for attr in ["year", "status", "dorm", "major", "gender", "high_school"]:
         assert f"{a[attr]['median']:.3f}" in README, attr
     assert f"effect of {a['dorm (legacy label)']['mean']:.3f}" in README
-    assert f"gives {a['dorm']['mean']:.3f}" in README
+    assert f"dorm effect is {a['dorm (missing counted)']['mean']:.3f}" in README
+    assert f"excluded\n  it is {a['dorm']['mean']:.3f}" in README
+    # Cost of counting missing values as a category, once the columns are fixed.
+    costs = [a[k]["mean"] - a[f"{k} (missing counted)"]["mean"] for k in ("dorm", "year")]
+    assert f"another {min(costs):.2f}-{max(costs):.2f} in r" in README
     assert f"on {SUMMARY['top_attribute_counts']['year']} of {SUMMARY['schools']}" in README
 
 
@@ -39,3 +43,6 @@ def test_label_propagation_and_communities():
     comm = SUMMARY["communities"]
     assert f"year on {comm['best_attribute_counts']['year']} of {comm['schools']}" in README
     assert f"Caltech ({comm['caltech_ari']['dorm']:.2f})" in README
+    others = comm["schools"] - comm["best_attribute_counts"]["year"]
+    assert f"On {others} of the {comm['schools']} campuses analysed" in README
+    assert f"on the other {comm['best_attribute_counts']['year']}, class year" in README
