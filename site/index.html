@@ -58,7 +58,7 @@ ties are, and whether the network's communities follow dorms or class years.</p>
   <div class="kpi"><b>0.44</b><span>median class-year assortativity,
   the strongest of 7 attributes</span></div>
   <div class="kpi"><b>0.22</b><span>median dorm assortativity
-  (first version reported a mean of 0.019)</span></div>
+  (the first version's median: 0.018)</span></div>
   <div class="kpi"><b>83%</b><span>hidden class years recovered
   from the graph alone (majority guess 21%)</span></div>
   <div class="kpi"><b>23%</b><span>of top-ranked candidate
@@ -84,7 +84,8 @@ category. What it called "year" was the dorm, and what it called "dorm" was the 
 table recomputes the first version, then fixes one error at a time, in the same run (mean r
 over 100 campuses).</p>
 <div class="table-wrap"><table><thead><tr><th>Attribute</th><th>First version</th><th>Column order fixed</th><th>Missing values also excluded</th></tr></thead><tbody><tr><td>Class year</td><td>0.175</td><td>0.356</td><td>0.431</td></tr><tr><td>Dorm / house</td><td>0.019</td><td>0.175</td><td>0.227</td></tr></tbody></table></div>
-<p class="note">Consequence: the original conclusion "dorms barely matter" was an artefact.
+<p class="note">Consequence: the first version's conclusion, that dorms barely matter, was an
+artefact.
 Dorms do matter (mean r 0.227, not 0.019);
 class year matters 1.9 times more.</p>
 

@@ -308,7 +308,7 @@ ties are, and whether the network's communities follow dorms or class years.</p>
   <div class="kpi"><b>{a["year"]["median"]:.2f}</b><span>median class-year assortativity,
   the strongest of 7 attributes</span></div>
   <div class="kpi"><b>{a["dorm"]["median"]:.2f}</b><span>median dorm assortativity
-  (first version reported a mean of {a["dorm (legacy label)"]["mean"]:.3f})</span></div>
+  (the first version's median: {a["dorm (legacy label)"]["median"]:.3f})</span></div>
   <div class="kpi"><b>{lp["year"]["accuracy"]:.0%}</b><span>hidden class years recovered
   from the graph alone (majority guess {lp["year"]["majority_baseline"]:.0%})</span></div>
   <div class="kpi"><b>{full[best]["r_precision"]:.0%}</b><span>of top-ranked candidate
@@ -334,7 +334,8 @@ category. What it called "year" was the dorm, and what it called "dorm" was the 
 table recomputes the first version, then fixes one error at a time, in the same run (mean r
 over {s["schools"]} campuses).</p>
 {_table(erratum)}
-<p class="note">Consequence: the original conclusion "dorms barely matter" was an artefact.
+<p class="note">Consequence: the first version's conclusion, that dorms barely matter, was an
+artefact.
 Dorms do matter (mean r {a["dorm"]["mean"]:.3f}, not {a["dorm (legacy label)"]["mean"]:.3f});
 class year matters {a["year"]["mean"] / a["dorm"]["mean"]:.1f} times more.</p>
 
