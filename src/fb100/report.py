@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import html
 import json
+import re
 from pathlib import Path
 
 import pandas as pd
@@ -18,6 +19,30 @@ from fb100.pipeline import load_results
 
 TEAL, AMBER, SLATE = "#0d9488", "#d97706", "#64748b"
 PLOTLY_JS = "https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.35.2/plotly.min.js"
+
+
+def _campus(name: str) -> str:
+    """Facebook100 file identifiers carry a numeric suffix (Caltech36); prose drops it."""
+    return re.sub(r"\d+$", "", name)
+
+
+def _join(names: list[str]) -> str:
+    return names[0] if len(names) == 1 else f"{', '.join(names[:-1])} and {names[-1]}"
+
+
+def _not_year_led(not_year_led: dict[str, str], comm: pd.DataFrame) -> str:
+    """', and dorm / house on Rice, Caltech, ...': campuses grouped by their leading
+    attribute, strongest match first; '' when every campus follows class year."""
+    ari = comm.set_index(["school", "attribute"])["ari"]
+    groups: dict[str, list[str]] = {}
+    for school, attr in not_year_led.items():
+        groups.setdefault(attr, []).append(school)
+    parts = [
+        f"{ATTR_LABEL[attr].lower()} on "
+        + _join([_campus(x) for x in sorted(schools, key=lambda x: -ari[x, attr])])
+        for attr, schools in groups.items()
+    ]
+    return f", and {'; '.join(parts)}" if parts else ""
 
 
 def _layout(fig: go.Figure, height: int = 420, **kwargs) -> go.Figure:
@@ -84,8 +109,17 @@ def chart_structure(st: pd.DataFrame) -> go.Figure:
             ),
         )
     )
+    ticks = [1000, 2000, 5000, 10000, 20000, 40000]
     return _layout(
-        fig, 380, xaxis={"type": "log", "title": "nodes (log)"}, yaxis_title="mean degree"
+        fig,
+        380,
+        xaxis={
+            "type": "log",
+            "title": "nodes (log)",
+            "tickvals": ticks,
+            "ticktext": [f"{t // 1000}k" for t in ticks],  # short enough not to tilt on phones
+        },
+        yaxis_title="mean degree",
     )
 
 
@@ -230,7 +264,7 @@ def build(results_dir: str | Path, out_path: str | Path) -> None:
     best = max(full, key=lambda m: full[m]["r_precision"])
     comm = s["communities"]
     year_wins = comm["best_attribute_counts"].get("year", 0)
-    exceptions = ", ".join(f"{k} ({v})" for k, v in comm["not_year_led"].items())
+    exceptions = _not_year_led(comm["not_year_led"], res["communities"])
     cn_aucs = [v["auc_sampled"] for m, v in full.items() if m != "preferential_attachment"]
     st = s["structure"]
 
@@ -373,10 +407,12 @@ substantially. Major stays hard ({lp["major"]["accuracy"]:.0%}) and gender gains
 
 <h2>5. Do communities follow dorms or years?</h2>
 <p>Louvain communities on the {comm["schools"]} campuses with at most 10,000 accounts,
-compared with each attribute by the adjusted Rand index (0 = chance).</p>
+compared with each attribute by the adjusted Rand index (0 = chance). Each dot is a campus:
+teal where its communities match class year at least as well as dorm, orange where they
+follow the dorm.</p>
 <div class="chart">{charts["communities"]}</div>
-<p class="takeaway">Communities follow class year on {year_wins} of {comm["schools"]} campuses.
-The exceptions: {exceptions}. Caltech is the
+<p class="takeaway">Communities follow class year on {year_wins} of {comm["schools"]}
+campuses{exceptions}. Caltech is the
 case highlighted by Traud et al.: its communities match the residential houses
 (ARI {comm["caltech_ari"]["dorm"]:.2f}) and not the class year
 (ARI {comm["caltech_ari"]["year"]:.2f}).</p>
