@@ -231,15 +231,21 @@ def build(results_dir: str | Path, out_path: str | Path) -> None:
     comm = s["communities"]
     year_wins = comm["best_attribute_counts"].get("year", 0)
     exceptions = ", ".join(f"{k} ({v})" for k, v in comm["not_year_led"].items())
-    auc_floor = min(v["auc_sampled"] for m, v in full.items() if m != "preferential_attachment")
+    cn_aucs = [v["auc_sampled"] for m, v in full.items() if m != "preferential_attachment"]
     st = s["structure"]
 
     erratum = pd.DataFrame(
         [
-            ["Class year", f"{a['year (legacy label)']['mean']:.3f}", f"{a['year']['mean']:.3f}"],
-            ["Dorm / house", f"{a['dorm (legacy label)']['mean']:.3f}", f"{a['dorm']['mean']:.3f}"],
+            [ATTR_LABEL[k]]
+            + [f"{a[v]['mean']:.3f}" for v in (f"{k} (legacy label)", f"{k} (missing counted)", k)]
+            for k in ("year", "dorm")
         ],
-        columns=["Attribute", "First version (mean r)", "Corrected (mean r)"],
+        columns=[
+            "Attribute",
+            "First version",
+            "Column order fixed",
+            "Missing values also excluded",
+        ],
     )
     lp_table = pd.DataFrame(
         [
@@ -302,7 +308,7 @@ ties are, and whether the network's communities follow dorms or class years.</p>
   <div class="kpi"><b>{a["year"]["median"]:.2f}</b><span>median class-year assortativity,
   the strongest of 7 attributes</span></div>
   <div class="kpi"><b>{a["dorm"]["median"]:.2f}</b><span>median dorm assortativity
-  (first version reported {a["dorm (legacy label)"]["mean"]:.3f})</span></div>
+  (first version reported a mean of {a["dorm (legacy label)"]["mean"]:.3f})</span></div>
   <div class="kpi"><b>{lp["year"]["accuracy"]:.0%}</b><span>hidden class years recovered
   from the graph alone (majority guess {lp["year"]["majority_baseline"]:.0%})</span></div>
   <div class="kpi"><b>{full[best]["r_precision"]:.0%}</b><span>of top-ranked candidate
@@ -315,17 +321,18 @@ attribute than random mixing would predict (0 = no preference). Missing values a
 excluded, as in Traud et al. (2012).</p>
 <div class="chart">{charts["assort"]}</div>
 <p class="takeaway">Class year dominates on {s["top_attribute_counts"].get("year", 0)} of
-{s["schools"]} campuses (median r = {a["year"]["median"]:.2f}), followed by status and dorm
-(median {a["dorm"]["median"]:.2f}). Major ({a["major"]["median"]:.2f}), gender
-({a["gender"]["median"]:.2f}) and high school ({a["high_school"]["median"]:.2f}) barely
+{s["schools"]} campuses (median r = {a["year"]["median"]:.3f}), followed by status and dorm
+(median {a["dorm"]["median"]:.3f}). Major ({a["major"]["median"]:.3f}), gender
+({a["gender"]["median"]:.3f}) and high school ({a["high_school"]["median"]:.3f}) barely
 structure the network; degree assortativity is weak
-({a["degree"]["median"]:.2f}).</p>
+({a["degree"]["median"]:.3f}).</p>
 
 <h3>Erratum</h3>
 <p>The first version of this project read <code>local_info</code> with six columns instead
 of the documented seven (it skipped "second major / minor") and counted missing values as a
 category. What it called "year" was the dorm, and what it called "dorm" was the minor. The
-table recomputes both versions in the same run.</p>
+table recomputes the first version, then fixes one error at a time, in the same run (mean r
+over {s["schools"]} campuses).</p>
 {_table(erratum)}
 <p class="note">Consequence: the original conclusion "dorms barely matter" was an artefact.
 Dorms do matter (mean r {a["dorm"]["mean"]:.3f}, not {a["dorm (legacy label)"]["mean"]:.3f});
@@ -346,12 +353,13 @@ The common benchmark (AUC against random non-edges) is compared with the realist
 rank <em>every</em> unlinked pair, as a "people you may know" feature would.</p>
 <div class="chart">{charts["linkpred"]}</div>
 {_table(lp_full)}
-<p class="takeaway">The four common-neighbour scores reach AUC {auc_floor:.2f} or more on the
-easy benchmark;
+<p class="takeaway">The four common-neighbour scores reach AUC {min(cn_aucs):.3f} to
+{max(cn_aucs):.3f} on the easy benchmark;
 on the full ranking the best ({METHOD_LABEL[best]}) gets {full[best]["r_precision"]:.1%} of
-its top-k pairs right, about {full[best]["r_precision"] / base:.0f} times the
-{base:.2%} base rate. The original claim of 96% precision@100 came from ranking hidden edges
-against a sample of ten random non-edges per hidden edge, not against every candidate.</p>
+its top-R pairs right (R = the number of hidden friendships), about
+{s["linkpred_best_lift_over_random"]} times the {base:.1%} base rate. The original claim of 96%
+precision@100 (Adamic-Adar, 12 smallest campuses) came from ranking hidden edges against ten
+times as many random non-edges, not against every candidate.</p>
 
 <h2>4. Recovering missing attributes</h2>
 <p>Harmonic label propagation on every campus, 20% of known labels hidden, compared with

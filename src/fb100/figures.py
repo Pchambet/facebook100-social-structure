@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import itertools
 import json
 from pathlib import Path
 
@@ -124,52 +125,51 @@ def hero_assortativity(res: dict[str, pd.DataFrame], s: dict, path: Path) -> Non
 
 def erratum(res: dict[str, pd.DataFrame], s: dict, path: Path) -> None:
     a = s["assortativity"]
+    # (label, first version, column order fixed, missing values also excluded)
     rows = [
-        ("Class year", "year (legacy label)", "year"),
-        ("Dorm / house", "dorm (legacy label)", "dorm"),
+        ("Class year", "year (legacy label)", "year (missing counted)", "year"),
+        ("Dorm / house", "dorm (legacy label)", "dorm (missing counted)", "dorm"),
     ]
-    fig, ax = plt.subplots(figsize=(9, 3.2))
-    for y, (_label, legacy, fixed) in enumerate(rows[::-1]):
-        old, new = a[legacy]["mean"], a[fixed]["mean"]
-        ax.annotate(
-            "",
-            xy=(new, y),
-            xytext=(old, y),
-            arrowprops={
-                "arrowstyle": "->",
-                "color": LIGHT_SLATE,
-                "lw": 2,
-                "shrinkA": 6,
-                "shrinkB": 6,
-            },
-        )
-        ax.scatter([old], [y], s=80, color=SLATE, zorder=2)
-        ax.scatter([new], [y], s=80, color=TEAL, zorder=2)
-        ax.annotate(
-            f"first version\n{old:.3f}",
-            (old, y + 0.14),
-            ha="center",
-            va="bottom",
-            fontsize=9,
-            color=SLATE,
-        )
-        ax.annotate(
-            f"corrected\n{new:.3f}",
-            (new, y + 0.14),
-            ha="center",
-            va="bottom",
-            fontsize=9,
-            color=INK,
-            fontweight="bold",
-        )
+    steps = [
+        ("first version", SLATE, "normal", 1),
+        ("column order fixed", AMBER, "normal", -1),
+        ("missing excluded", TEAL, "bold", 1),
+    ]
+    fig, ax = plt.subplots(figsize=(9, 3.6))
+    for y, (_label, *keys) in enumerate(rows[::-1]):
+        values = [a[k]["mean"] for k in keys]
+        for x0, x1 in itertools.pairwise(values):
+            ax.annotate(
+                "",
+                xy=(x1, y),
+                xytext=(x0, y),
+                arrowprops={
+                    "arrowstyle": "->",
+                    "color": LIGHT_SLATE,
+                    "lw": 2,
+                    "shrinkA": 6,
+                    "shrinkB": 6,
+                },
+            )
+        for v, (name, color, weight, side) in zip(values, steps, strict=True):
+            ax.scatter([v], [y], s=80, color=color, zorder=2)
+            ax.annotate(
+                f"{name}\n{v:.3f}" if side > 0 else f"{v:.3f}\n{name}",
+                (v, y + 0.14 * side),
+                ha="center",
+                va="bottom" if side > 0 else "top",
+                fontsize=9,
+                color=INK if weight == "bold" else color,
+                fontweight=weight,
+            )
     ax.set_yticks([0, 1], [r[0] for r in rows[::-1]])
-    ax.set_ylim(-0.4, 1.75)
-    ax.set_xlim(-0.01, max(a["year"]["mean"], a["dorm"]["mean"]) * 1.12)
+    ax.set_ylim(-0.75, 1.75)
+    ax.set_xlim(-0.03, max(a["year"]["mean"], a["dorm"]["mean"]) * 1.15)
     ax.grid(axis="y", visible=False)
     ax.set_xlabel(f"Mean assortativity r over {s['schools']} campuses")
     ax.set_title(
-        "Erratum: the first version read the attribute columns one slot off,\n"
-        "which understated the class-year effect and erased the dorm effect",
+        "Erratum: the first version read the columns one slot off and counted missing\n"
+        "values as a category, which understated the class-year and dorm effects",
         pad=10,
     )
     _save(fig, path)
@@ -220,7 +220,8 @@ def link_prediction(res: dict[str, pd.DataFrame], s: dict, path: Path) -> None:
     best = mean["r_precision"].max()
     fig.suptitle(
         f"Neighbourhood scores reach AUC ~{mean['auc_sampled'].max():.2f}, yet only "
-        f"{best:.0%} of their top-ranked pairs are hidden friendships ({best / base:.0f}x random)",
+        f"{best:.0%} of their top-ranked pairs are hidden friendships "
+        f"({s['linkpred_best_lift_over_random']}x random)",
         x=0.01,
         ha="left",
         fontsize=13,
