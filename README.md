@@ -1,14 +1,14 @@
-# Project_Network_Science
+# facebook100-social-structure
 
 **What organises friendship on a college campus?** Homophily, link prediction, label
 propagation and community detection on all 100 Facebook100 campus networks
 (1.2 million accounts, 47 million friendships), with honest baselines and a documented
 correction of this project's first version.
 
-[![ci](https://github.com/Pchambet/Project_Network_Science/actions/workflows/ci.yml/badge.svg)](https://github.com/Pchambet/Project_Network_Science/actions/workflows/ci.yml)
+[![ci](https://github.com/Pchambet/facebook100-social-structure/actions/workflows/ci.yml/badge.svg)](https://github.com/Pchambet/facebook100-social-structure/actions/workflows/ci.yml)
 ![Python 3.12](https://img.shields.io/badge/python-3.12-0d9488)
 [![License: MIT](https://img.shields.io/badge/license-MIT-64748b)](LICENSE)
-[![Report](https://img.shields.io/badge/report-online-d97706)](https://pchambet.github.io/Project_Network_Science/)
+[![Report](https://img.shields.io/badge/report-online-d97706)](https://pchambet.github.io/facebook100-social-structure/)
 
 ![Assortativity of seven attributes across 100 campuses](docs/figures/hero_assortativity.png)
 
@@ -111,7 +111,7 @@ Mean degree ranges 39-116 while size ranges 769-41,554, so density falls almost 
 with size (correlation of logs -0.97). Transitivity (median 0.158) stays about 19 times the
 density: clustered, not random.
 
-The [online report](https://pchambet.github.io/Project_Network_Science/) has interactive
+The [online report](https://pchambet.github.io/facebook100-social-structure/) has interactive
 versions of every chart (hover for each campus).
 
 ## Reproduce
