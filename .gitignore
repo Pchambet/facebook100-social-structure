@@ -1,34 +1,23 @@
 # Python
 __pycache__/
 *.py[cod]
-*$py.class
-*.so
-.Python
+.venv/
+.ruff_cache/
+.pytest_cache/
 *.egg-info/
-*.egg
 dist/
 build/
 
-# Virtual environments
-.venv/
-venv/
-env/
+# Data (downloaded by `make data`, never committed)
+data/raw/
+data/interim/
 
-# Jupyter
+# Notebooks
 .ipynb_checkpoints/
 
-# IDE
+# Editors / OS
 .vscode/
 .cursor/
 .idea/
-*.swp
-
-# OS
 .DS_Store
-Thumbs.db
-
-# Environment
 .env
-.envrc
-
-.DS_Store
