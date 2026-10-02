@@ -15,19 +15,18 @@ correction of this project's first version.
 ## TL;DR
 
 - **Class year is the main organiser of campus friendship**: it is the most assortative
-  attribute on 91 of 100 campuses (median r = 0.436), ahead of status (0.317) and dorm
-  (0.221). Major (0.050), gender (0.055) and high school (0.030) barely matter.
+  attribute on 91 of 100 campuses. Median r over campuses: class year 0.436, status 0.317,
+  dorm 0.221; major (0.050), gender (0.055) and high school (0.030) barely matter.
 - **Erratum.** The first version of this project read the attribute columns one slot off
   (its "year" was the dorm, its "dorm" the second major) and counted missing values as a
-  category. It reported a dorm effect of 0.019 and concluded that dorms do not matter. With
-  the documented column order the dorm effect is 0.175, and with missing values excluded
-  it is 0.227 (means over 100 campuses).
+  category. Its notebook and report found a dorm effect of 0.019 and concluded that dorms
+  do not matter (its README, contradicting both, said dorms drive friendships). As means
+  over 100 campuses: with the documented column order the dorm effect is 0.175, and with
+  missing values excluded it is 0.227.
 - **Link prediction looks solved and is not.** Common-neighbour scores reach a sampled AUC
-  of 0.935-0.946, but when every unlinked pair is ranked, only 23% of the top-ranked pairs
-  are hidden friendships (resource allocation, R-precision; base rate 0.4%). The first
-  version's 96% precision@100 for Adamic-Adar came from ranking hidden edges against ten
-  times as many random non-edges (12 smallest campuses); on the full ranking it is 61%
-  (10 smallest campuses).
+  of 0.935-0.946 (10 smallest campuses), yet when every unlinked pair is ranked, only 23% of
+  the top-ranked pairs are hidden friendships (resource allocation, R-precision): 58 times
+  the 0.4% base rate, and still wrong about four times in five.
 - **The graph alone recovers a hidden class year 83% of the time** (median over 100
   campuses; always guessing the most frequent year: 21%) and a hidden dorm 56% of the time
   (10%). For gender it adds 7 points over the majority guess.
@@ -62,8 +61,10 @@ flowchart LR
    two endpoints are labelled.
 3. **Link prediction**: hide 10% of edges; score pairs with common neighbours, Jaccard,
    Adamic-Adar, resource allocation and preferential attachment; evaluate against random
-   non-edges (AUC, all campuses) and on the full ranking of unlinked pairs (precision@k,
-   R-precision, 10 smallest campuses x 5 splits).
+   non-edges (sampled AUC: median 0.96-0.97 for the common-neighbour scores over all 100
+   campuses; the README quotes the 10 smallest campuses, like for like with the full
+   ranking) and on the full ranking of unlinked pairs (precision@k, R-precision, 10 smallest
+   campuses x 5 splits).
 4. **Label propagation**: harmonic propagation (Zhu et al., 2003) with 20% of known labels
    hidden, against the majority-class guess.
 5. **Communities**: Louvain (campuses up to 10,000 nodes), compared with each attribute by
@@ -94,11 +95,14 @@ reproduces the first version exactly and fixes one error at a time (`* (legacy l
 
 Mean over the 10 smallest campuses x 5 random splits; base rate of the full ranking 0.4%.
 Precision@k is the expectation over random tie-breaking (scores are heavily tied).
+The first version's 96% precision@100 for Adamic-Adar came from ranking hidden edges against
+ten times as many random non-edges (12 smallest campuses); on the full ranking it is 61%.
 
 ![Label propagation](docs/figures/label_propagation.png)
 
-Class year and dorm are largely recoverable from the graph; major only partly (26%) and
-gender barely (+7 points over the majority guess), in line with their weak assortativity.
+Class year is largely recoverable from the graph (83%), dorm about half the time (56% vs
+10%); major only partly (26%) and gender barely (+7 points over the majority guess), in line
+with their weak assortativity (medians over 100 campuses).
 
 ![Communities](docs/figures/communities.png)
 
@@ -140,7 +144,8 @@ src/fb100/
   labelprop.py     harmonic label propagation
   communities.py   Louvain + ARI / NMI against attributes
   pipeline.py      end-to-end run and headline summary
-  figures.py       static figures   report.py   static HTML report
+  figures.py       static figures
+  report.py        static HTML report
 tests/             unit tests, incl. ground-truth recovery on planted partitions
 results/           result tables and summary.json (committed, 240 KB)
 docs/figures/      README figures
@@ -162,8 +167,8 @@ data/README.md     data source and terms (the data itself is not committed)
   on the 10 smallest campuses (dense n x n score matrices).
 - **Label propagation** uses one random 20% split per campus. On the 10 smallest campuses
   (`results/labelprop_curve.csv`, 3 seeds) accuracy degrades gracefully as more labels are
-  hidden (class year: 88% with 10% hidden, 64% with 90% hidden) and the seed-to-seed
-  standard deviation is about 2 points.
+  hidden (class year, median over 30 runs: 88% with 10% hidden, 64% with 90% hidden) and
+  the median seed-to-seed standard deviation is 2 points.
 - **Louvain** is run once (seed 0) and only on the 50 campuses with at most 10,000 nodes.
 - **Data ethics.** The dataset describes real people. It is analysed only in aggregate and
   is no longer stored in this repository: the files were removed from the tree in

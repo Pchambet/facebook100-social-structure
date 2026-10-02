@@ -199,7 +199,7 @@ def summarize_results(frames: dict[str, pd.DataFrame]) -> dict:
     """Headline numbers quoted in the README and the report."""
     st, asr = frames["structure"], frames["assortativity"]
     auc, lp, comm = frames["linkpred_auc"], frames["labelprop"], frames["communities"]
-    full = frames["linkpred_full"]
+    full, curve = frames["linkpred_full"], frames["labelprop_curve"]
 
     by_attr = asr.groupby("attribute")["r"]
     assort = {
@@ -223,6 +223,8 @@ def summarize_results(frames: dict[str, pd.DataFrame]) -> dict:
         .groupby("attribute")[["accuracy", "majority_baseline", "lift"]]
         .median()
     )
+    curve_runs = curve.groupby(["attribute", "hidden_fraction"])["accuracy"]
+    seed_sd = curve.groupby(["school", "attribute", "hidden_fraction"])["accuracy"].std()
     best_comm = comm.loc[comm.groupby("school")["ari"].idxmax()]
     caltech = comm[comm["school"] == "Caltech36"].set_index("attribute")["ari"]
 
@@ -259,6 +261,15 @@ def summarize_results(frames: dict[str, pd.DataFrame]) -> dict:
         ),
         "labelprop_median_over_schools": {
             a: {k: _r(v) for k, v in row.items()} for a, row in lp_summary.iterrows()
+        },
+        # Small campuses x seeds, pooled: one median per attribute and hidden fraction.
+        "labelprop_curve_small_schools": {
+            "runs_per_point": int(curve_runs.size().min()),
+            "median_accuracy": {
+                a: {f"{f:g}": _r(v) for (_, f), v in g.items()}
+                for a, g in curve_runs.median().groupby(level="attribute")
+            },
+            "seed_sd_median": _r(seed_sd.median()),
         },
         "communities": {
             "schools": int(comm["school"].nunique()),
