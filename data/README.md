@@ -34,4 +34,6 @@ are anonymised codes (the year column holds calendar years).
 - The dataset describes real people. It is used here only for aggregate, school-level
   statistics; no attempt is made to identify individuals, and none should be.
 - The authors no longer distribute the files from their own pages. This repository
-  therefore does not redistribute them and only points to the public archive.
+  therefore no longer stores them and only points to the public archive. The first
+  version of the project committed them (January 2026); they were removed from the tree in
+  October 2026 but remain in the git history of those earlier commits.

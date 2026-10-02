@@ -166,7 +166,9 @@ data/README.md     data source and terms (the data itself is not committed)
   standard deviation is about 2 points.
 - **Louvain** is run once (seed 0) and only on the 50 campuses with at most 10,000 nodes.
 - **Data ethics.** The dataset describes real people. It is analysed only in aggregate and
-  is not redistributed here; see [`data/README.md`](data/README.md).
+  is no longer stored in this repository: the files were removed from the tree in
+  October 2026, but the earlier commits still contain them. See
+  [`data/README.md`](data/README.md).
 
 This started as a course project (NET 4103/7431, Telecom SudParis, January 2026) with
 Lilian Marthiens; the original French report is kept in
