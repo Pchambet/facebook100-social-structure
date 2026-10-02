@@ -79,7 +79,7 @@ def chart_structure(st: pd.DataFrame) -> go.Figure:
             text=st["school"],
             customdata=st[["transitivity", "density"]],
             hovertemplate=(
-                "%{text}<br>%{x:,} students<br>mean degree %{y:.1f}"
+                "%{text}<br>%{x:,} accounts<br>mean degree %{y:.1f}"
                 "<br>transitivity %{customdata[0]:.3f}<br>density %{customdata[1]:.4f}<extra></extra>"
             ),
         )
@@ -115,7 +115,7 @@ def chart_linkpred(full: pd.DataFrame) -> go.Figure:
         barmode="group",
         showlegend=True,
         legend={"orientation": "h", "y": -0.18},
-        xaxis={"range": [0, 1], "title": "score (mean over 10 campuses x 5 splits)"},
+        xaxis={"range": [0, 1], "title": "mean score"},
     )
 
 
@@ -197,6 +197,7 @@ a { color:var(--accent); }
 .kpi b { display:block; font-size:1.6rem; color:var(--accent); line-height:1.2; }
 .kpi span { color:var(--muted); font-size:0.88rem; }
 .takeaway { font-weight:600; }
+.table-wrap { overflow-x:auto; }
 table { border-collapse:collapse; width:100%; font-size:0.92rem; margin:12px 0; }
 th, td { text-align:right; padding:6px 8px; border-bottom:1px solid var(--rule); }
 th:first-child, td:first-child { text-align:left; }
@@ -213,7 +214,10 @@ def _table(frame: pd.DataFrame) -> str:
         "<tr>" + "".join(f"<td>{html.escape(str(v))}</td>" for v in row) + "</tr>"
         for row in frame.itertuples(index=False)
     )
-    return f"<table><thead><tr>{head}</tr></thead><tbody>{rows}</tbody></table>"
+    return (
+        f'<div class="table-wrap"><table><thead><tr>{head}</tr></thead>'
+        f"<tbody>{rows}</tbody></table></div>"
+    )
 
 
 def build(results_dir: str | Path, out_path: str | Path) -> None:
@@ -290,7 +294,7 @@ in 100 US campus friendship networks (Facebook, 2005).">
 <main>
 <p class="meta">Network science report &middot; Facebook100 (September 2005)</p>
 <h1>What organises friendship on a campus?</h1>
-<p class="lede">{s["schools"]} complete campus friendship graphs, {s["nodes_total"]:,} students
+<p class="lede">{s["schools"]} complete campus friendship graphs, {s["nodes_total"]:,} accounts
 and {s["edges_total"]:,} friendships: which attributes friends share, how predictable new
 ties are, and whether the network's communities follow dorms or class years.</p>
 
@@ -329,7 +333,7 @@ class year matters {a["year"]["mean"] / a["dorm"]["mean"]:.1f} times more.</p>
 
 <h2>2. Size, density and clustering</h2>
 <div class="chart">{charts["structure"]}</div>
-<p class="takeaway">Campuses range from {st["nodes_min"]:,} to {st["nodes_max"]:,} students,
+<p class="takeaway">Campuses range from {st["nodes_min"]:,} to {st["nodes_max"]:,} accounts,
 but the mean number of friends only ranges {st["mean_degree_min"]:.0f}-{st["mean_degree_max"]:.0f}
 (median {st["mean_degree_median"]:.0f}). Density therefore falls with size (correlation of
 logs {st["corr_log_size_log_density"]:.2f}), while transitivity stays around
@@ -355,11 +359,11 @@ always guessing the most frequent value.</p>
 <div class="chart">{charts["labelprop"]}</div>
 {_table(lp_table)}
 <p class="takeaway">The graph alone recovers class year far above the baseline and dorms
-substantially; for gender and major it adds little, consistent with their weak
-assortativity.</p>
+substantially. Major stays hard ({lp["major"]["accuracy"]:.0%}) and gender gains only
+{lp["gender"]["lift"] * 100:.0f} points, consistent with their weak assortativity.</p>
 
 <h2>5. Do communities follow dorms or years?</h2>
-<p>Louvain communities on the {comm["schools"]} campuses with at most 10,000 students,
+<p>Louvain communities on the {comm["schools"]} campuses with at most 10,000 accounts,
 compared with each attribute by the adjusted Rand index (0 = chance).</p>
 <div class="chart">{charts["communities"]}</div>
 <p class="takeaway">Communities follow class year on {year_wins} of {comm["schools"]} campuses.
