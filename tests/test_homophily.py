@@ -1,9 +1,11 @@
 import networkx as nx
 import numpy as np
+import pandas as pd
 import pytest
 
 from fb100.homophily import attribute_assortativity
-from fb100.io import clean_adjacency
+from fb100.io import ATTRIBUTES, MISSING, School, clean_adjacency
+from fb100.pipeline import erratum_rows
 
 
 def _adj(g):
@@ -39,3 +41,16 @@ def test_recovers_planted_homophily(sbm):
     a, labels = sbm
     f = 0.12 / (0.12 + 3 * 0.01)
     assert attribute_assortativity(a, labels) == pytest.approx((f - 0.25) / 0.75, abs=0.03)
+
+
+def test_erratum_rows_isolate_each_error(sbm):
+    """Legacy rows read the shifted column; 'missing counted' rows only keep the zeros."""
+    adjacency, blocks = sbm
+    rng = np.random.default_rng(0)
+    dorm = np.where(rng.random(len(blocks)) < 0.3, MISSING, blocks)
+    attrs = pd.DataFrame({name: rng.integers(1, 5, len(blocks)) for name in ATTRIBUTES})
+    attrs["dorm"] = dorm
+    rows = {r["attribute"]: r["r"] for r in erratum_rows(School("x", adjacency, attrs))}
+    assert rows["year (legacy label)"] == rows["dorm (missing counted)"]
+    # Missing values as one big fake dorm dilute the effect the labelled edges show.
+    assert rows["dorm (missing counted)"] < attribute_assortativity(adjacency, dorm) - 0.1

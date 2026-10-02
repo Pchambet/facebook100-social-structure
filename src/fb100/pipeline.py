@@ -17,7 +17,7 @@ import numpy as np
 import pandas as pd
 
 from fb100 import communities, homophily, labelprop, linkpred, structure
-from fb100.io import ATTRIBUTES, MISSING, list_schools, load_school
+from fb100.io import ATTRIBUTES, MISSING, School, list_schools, load_school
 
 LP_ATTRIBUTES = ("dorm", "year", "major", "gender")
 COMMUNITY_MAX_NODES = 10_000  # NetworkX Louvain on larger campuses costs minutes each
@@ -25,9 +25,34 @@ N_SMALL = 10
 SEEDS = (0, 1, 2, 3, 4)
 LP_FRACTIONS = (0.1, 0.3, 0.5, 0.7, 0.9)
 
-# The first version of this project read local_info with a 6-column map that skipped the
-# minor column, and counted missing values (0) as a category. Kept to document the fix.
-LEGACY_COLUMNS = {"year (legacy label)": 4, "dorm (legacy label)": 3}
+# The first version of this project made two errors at once: it read local_info with a
+# 6-column map that skipped the minor column (its "year" was the dorm, its "dorm" the
+# minor), and it counted missing values (0) as a category. These rows reproduce it, then
+# fix the column order alone, so the erratum can say how much each error cost (fixing
+# both gives the plain "year" and "dorm" rows). All count missing values as a category.
+# label -> column actually read; "year (legacy label)" is "dorm (missing counted)".
+ERRATUM_VARIANTS = {
+    "year (legacy label)": "dorm",
+    "dorm (legacy label)": "minor",
+    "year (missing counted)": "year",
+    "dorm (missing counted)": "dorm",
+}
+
+
+def erratum_rows(school: School) -> list[dict]:
+    """Assortativity rows for the erratum variants (missing values counted)."""
+    return [
+        {
+            "school": school.name,
+            "nodes": school.n_nodes,
+            "attribute": label,
+            "r": homophily.attribute_assortativity(
+                school.adjacency, school.attributes[column].to_numpy(), missing=None
+            ),
+            "labelled_share": 1.0,
+        }
+        for label, column in ERRATUM_VARIANTS.items()
+    ]
 
 
 def _per_school(path: Path) -> dict[str, list[dict]]:
@@ -56,17 +81,7 @@ def _per_school(path: Path) -> dict[str, list[dict]]:
             "labelled_share": 1.0,
         }
     )
-    raw = attrs.to_numpy()
-    for label, col in LEGACY_COLUMNS.items():
-        out["assort"].append(
-            {
-                "school": school.name,
-                "nodes": school.n_nodes,
-                "attribute": label,
-                "r": homophily.attribute_assortativity(a, raw[:, col], missing=None),
-                "labelled_share": 1.0,
-            }
-        )
+    out["assort"].extend(erratum_rows(school))
 
     for row in linkpred.evaluate(a, seed=0, full_ranking=False):
         out["auc"].append({"school": school.name, "nodes": school.n_nodes, **row})
@@ -237,6 +252,11 @@ def summarize_results(frames: dict[str, pd.DataFrame]) -> dict:
         "linkpred_full_ranking_small_schools": {
             m: {k: _r(v, 4) for k, v in row.items()} for m, row in full_mean.iterrows()
         },
+        # Best R-precision over the base rate, from unrounded means so that the figure and
+        # the report quote the same multiple.
+        "linkpred_best_lift_over_random": round(
+            float(full_mean["r_precision"].max() / full_mean["base_rate"].mean())
+        ),
         "labelprop_median_over_schools": {
             a: {k: _r(v) for k, v in row.items()} for a, row in lp_summary.iterrows()
         },

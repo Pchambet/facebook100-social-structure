@@ -35,6 +35,13 @@
       "q75": 0.022,
       "schools": 100
     },
+    "dorm (missing counted)": {
+      "median": 0.173,
+      "mean": 0.175,
+      "q25": 0.132,
+      "q75": 0.203,
+      "schools": 100
+    },
     "gender": {
       "median": 0.055,
       "mean": 0.053,
@@ -82,6 +89,13 @@
       "mean": 0.175,
       "q25": 0.132,
       "q75": 0.203,
+      "schools": 100
+    },
+    "year (missing counted)": {
+      "median": 0.36,
+      "mean": 0.356,
+      "q25": 0.291,
+      "q75": 0.422,
       "schools": 100
     }
   },
@@ -134,6 +148,7 @@
       "base_rate": 0.004
     }
   },
+  "linkpred_best_lift_over_random": 58,
   "labelprop_median_over_schools": {
     "dorm": {
       "accuracy": 0.561,
