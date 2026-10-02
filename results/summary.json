@@ -1,0 +1,196 @@
+{
+  "schools": 100,
+  "nodes_total": 1208316,
+  "edges_total": 46984537,
+  "structure": {
+    "nodes_min": 769,
+    "nodes_max": 41554,
+    "mean_degree_median": 77.5,
+    "mean_degree_min": 39.1,
+    "mean_degree_max": 116.1,
+    "corr_log_size_log_mean_degree": 0.216,
+    "corr_log_size_log_density": -0.966,
+    "transitivity_median": 0.158,
+    "clustering_over_density_median": 18.8
+  },
+  "assortativity": {
+    "degree": {
+      "median": 0.065,
+      "mean": 0.063,
+      "q25": 0.025,
+      "q75": 0.093,
+      "schools": 100
+    },
+    "dorm": {
+      "median": 0.221,
+      "mean": 0.227,
+      "q25": 0.17,
+      "q75": 0.273,
+      "schools": 100
+    },
+    "dorm (legacy label)": {
+      "median": 0.018,
+      "mean": 0.019,
+      "q25": 0.015,
+      "q75": 0.022,
+      "schools": 100
+    },
+    "gender": {
+      "median": 0.055,
+      "mean": 0.053,
+      "q25": 0.021,
+      "q75": 0.092,
+      "schools": 100
+    },
+    "high_school": {
+      "median": 0.03,
+      "mean": 0.062,
+      "q25": 0.016,
+      "q75": 0.098,
+      "schools": 100
+    },
+    "major": {
+      "median": 0.05,
+      "mean": 0.056,
+      "q25": 0.042,
+      "q75": 0.06,
+      "schools": 100
+    },
+    "minor": {
+      "median": 0.02,
+      "mean": 0.021,
+      "q25": 0.018,
+      "q75": 0.024,
+      "schools": 100
+    },
+    "status": {
+      "median": 0.317,
+      "mean": 0.323,
+      "q25": 0.256,
+      "q75": 0.395,
+      "schools": 100
+    },
+    "year": {
+      "median": 0.436,
+      "mean": 0.431,
+      "q25": 0.374,
+      "q75": 0.495,
+      "schools": 100
+    },
+    "year (legacy label)": {
+      "median": 0.173,
+      "mean": 0.175,
+      "q25": 0.132,
+      "q75": 0.203,
+      "schools": 100
+    }
+  },
+  "top_attribute_counts": {
+    "year": 91,
+    "dorm": 8,
+    "status": 1
+  },
+  "linkpred_auc_all_schools_median": {
+    "adamic_adar": 0.964,
+    "common_neighbors": 0.961,
+    "jaccard": 0.962,
+    "preferential_attachment": 0.81,
+    "resource_allocation": 0.966
+  },
+  "linkpred_full_ranking_small_schools": {
+    "adamic_adar": {
+      "auc_sampled": 0.9396,
+      "average_precision": 0.1335,
+      "r_precision": 0.2033,
+      "precision_at_100": 0.6098,
+      "base_rate": 0.004
+    },
+    "common_neighbors": {
+      "auc_sampled": 0.9351,
+      "average_precision": 0.1215,
+      "r_precision": 0.1942,
+      "precision_at_100": 0.5955,
+      "base_rate": 0.004
+    },
+    "jaccard": {
+      "auc_sampled": 0.9396,
+      "average_precision": 0.1392,
+      "r_precision": 0.2151,
+      "precision_at_100": 0.5317,
+      "base_rate": 0.004
+    },
+    "preferential_attachment": {
+      "auc_sampled": 0.796,
+      "average_precision": 0.0215,
+      "r_precision": 0.0529,
+      "precision_at_100": 0.1377,
+      "base_rate": 0.004
+    },
+    "resource_allocation": {
+      "auc_sampled": 0.9459,
+      "average_precision": 0.1534,
+      "r_precision": 0.2294,
+      "precision_at_100": 0.5778,
+      "base_rate": 0.004
+    }
+  },
+  "labelprop_median_over_schools": {
+    "dorm": {
+      "accuracy": 0.561,
+      "majority_baseline": 0.104,
+      "lift": 0.438
+    },
+    "gender": {
+      "accuracy": 0.617,
+      "majority_baseline": 0.542,
+      "lift": 0.068
+    },
+    "major": {
+      "accuracy": 0.256,
+      "majority_baseline": 0.099,
+      "lift": 0.149
+    },
+    "year": {
+      "accuracy": 0.829,
+      "majority_baseline": 0.214,
+      "lift": 0.612
+    }
+  },
+  "communities": {
+    "schools": 50,
+    "best_attribute_counts": {
+      "year": 46,
+      "dorm": 4
+    },
+    "median_ari": {
+      "dorm": 0.093,
+      "gender": 0.001,
+      "major": 0.01,
+      "year": 0.432
+    },
+    "caltech_ari": {
+      "dorm": 0.691,
+      "gender": 0.002,
+      "major": 0.006,
+      "year": 0.014
+    },
+    "not_year_led": {
+      "Caltech36": "dorm",
+      "Rice31": "dorm",
+      "Smith60": "dorm",
+      "UCSC68": "dorm"
+    }
+  },
+  "assortativity_not_year_led": {
+    "Auburn71": "dorm",
+    "Caltech36": "dorm",
+    "Harvard1": "status",
+    "Mich67": "dorm",
+    "Mississippi66": "dorm",
+    "Oklahoma97": "dorm",
+    "Rice31": "dorm",
+    "Texas84": "dorm",
+    "UCSC68": "dorm"
+  },
+  "missing_code": 0
+}
