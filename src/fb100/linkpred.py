@@ -66,6 +66,8 @@ def sample_non_edges(adjacency: sp.csr_array, size: int, rng: np.random.Generato
     """Uniform random unlinked pairs (u < v) of the *full* graph, by rejection sampling."""
     n = adjacency.shape[0]
     a = sp.csr_array(adjacency)
+    if size > n * (n - 1) // 2 - a.nnz // 2:
+        raise ValueError(f"cannot sample {size} non-edges from this graph")
     pairs: dict[tuple[int, int], None] = {}  # insertion-ordered set, for reproducibility
     while len(pairs) < size:
         u = rng.integers(0, n, size=2 * size)

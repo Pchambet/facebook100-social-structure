@@ -52,6 +52,8 @@ def test_non_edges_are_unique_unlinked_pairs(karate_adj):
     assert len({tuple(p) for p in pairs.tolist()}) == 200
     assert np.all(pairs[:, 0] < pairs[:, 1])
     assert np.all(np.asarray(karate_adj[pairs[:, 0], pairs[:, 1]]).ravel() == 0)
+    with pytest.raises(ValueError):
+        sample_non_edges(karate_adj, 34 * 33 // 2 - 78 + 1, np.random.default_rng(1))
 
 
 def test_neighbourhood_scores_recover_planted_edges():
