@@ -117,8 +117,19 @@ def score_matrix(train: sp.csr_array, method: str) -> np.ndarray:
     return common
 
 
-def precision_at(labels_in_rank_order: np.ndarray, k: int) -> float:
-    return float(labels_in_rank_order[:k].mean())
+def precision_at(scores: np.ndarray, y: np.ndarray, k: int) -> float:
+    """Precision of the top-k pairs, in expectation over random tie-breaking.
+
+    Heuristic scores are heavily tied (common-neighbour counts are small integers), so a
+    plain sort would let array order decide which tied pairs make the cut. Pairs scoring
+    above the k-th largest value are all in; the remaining slots are filled from the tied
+    block, whose expected share of positives is its positive rate. No full sort needed.
+    """
+    threshold = np.partition(scores, len(scores) - k)[len(scores) - k]
+    above, tied = scores > threshold, scores == threshold
+    n_above = int(above.sum())
+    hits = y[above].sum() + (k - n_above) * y[tied].sum() / tied.sum()
+    return float(hits / k)
 
 
 def evaluate(
@@ -137,13 +148,12 @@ def evaluate(
     sampled_y = np.r_[np.ones(len(test)), np.zeros(len(negatives))]
 
     if full_ranking:
-        n = adjacency.shape[0]
-        iu, ju = np.triu_indices(n, k=1)
-        candidate = np.asarray(train[iu, ju]).ravel() == 0
+        iu, ju = np.triu_indices(adjacency.shape[0], k=1)
+        candidate = train.toarray()[iu, ju] == 0
         iu, ju = iu[candidate], ju[candidate]
-        hidden = sp.csr_array((np.ones(len(test)), (test[:, 0], test[:, 1])), shape=adjacency.shape)
-        y_full = np.asarray(hidden[iu, ju]).ravel()
-        tie_break = rng.random(len(iu))
+        hidden = np.zeros(adjacency.shape, dtype=bool)
+        hidden[test[:, 0], test[:, 1]] = True
+        y_full = hidden[iu, ju].astype(np.float64)
 
     rows = []
     for method in methods:
@@ -157,12 +167,11 @@ def evaluate(
         }
         if full_ranking:
             scores = score_matrix(train, method)[iu, ju]
-            ranked = y_full[np.lexsort((tie_break, -scores))]
             row["candidates"] = len(iu)
             row["base_rate"] = float(y_full.mean())
             row["average_precision"] = float(average_precision_score(y_full, scores))
-            row["r_precision"] = precision_at(ranked, len(test))
+            row["r_precision"] = precision_at(scores, y_full, len(test))
             for k in ks:
-                row[f"precision_at_{k}"] = precision_at(ranked, k)
+                row[f"precision_at_{k}"] = precision_at(scores, y_full, k)
         rows.append(row)
     return rows

@@ -7,6 +7,7 @@ from fb100.io import clean_adjacency
 from fb100.linkpred import (
     METHODS,
     evaluate,
+    precision_at,
     sample_non_edges,
     score_matrix,
     score_pairs,
@@ -65,3 +66,12 @@ def test_neighbourhood_scores_recover_planted_edges():
     ceiling = 0.1 * 0.3 / (1 - 0.9 * 0.3)
     assert rows["adamic_adar"]["r_precision"] == pytest.approx(ceiling, abs=0.01)
     assert rows["adamic_adar"]["r_precision"] > 4 * rows["adamic_adar"]["base_rate"]
+
+
+def test_precision_at_k_averages_over_ties():
+    scores = np.array([5.0, 3, 3, 3, 3, 1])
+    y = np.array([1.0, 1, 0, 0, 0, 1])
+    assert precision_at(scores, y, 1) == 1.0
+    # Top-3 = the 5 plus two of four tied 3s, of which one in four is positive.
+    assert precision_at(scores, y, 3) == pytest.approx((1 + 2 * 0.25) / 3)
+    assert precision_at(scores, y, 6) == pytest.approx(0.5)
